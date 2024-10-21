@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Rating Finder</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+         :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --background-color: #f0f2f5;
+            --card-background: #ffffff;
+            --text-color: #2c3e50;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --error-color: #e74c3c;
+            --success-color: #2ecc71;
+            --hover-color: #2980b9;
+            --border-radius: 10px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 2rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            margin-top: 2rem;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        h1 i {
+            color: var(--secondary-color);
+            margin-right: 10px;
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            border: 2px solid #e1e1e1;
+            border-radius: var(--border-radius);
+            transition: all 0.3s ease;
+            background-color: #f8f9fa;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            outline: none;
+            background-color: #fff;
+        }
+
+        button {
+            padding: 1rem 2rem;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        button:hover {
+            background-color: var(--hover-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .movie-details {
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            margin-top: 2rem;
+            box-shadow: var(--shadow);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .movie-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background-color: white;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            transition: transform 0.2s ease;
+        }
+
+        .movie-detail-item:hover {
+            transform: translateX(5px);
+        }
+
+        .movie-detail-item i {
+            color: var(--secondary-color);
+            font-size: 1.2rem;
+        }
+
+        .suggestion-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .suggestion-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .suggestion-item:hover {
+            background-color: #f8f9fa;
+            padding-left: 1.5rem;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 2rem;
+            height: 2rem;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--secondary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .google-search-btn {
+            background-color: #4285f4;
+            margin-top: 1rem;
+            width: auto;
+            align-self: center;
+        }
+
+        .google-search-btn:hover {
+            background-color: #357abd;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            justify-content: center;
+        }
+
+        .error {
+            color: var(--error-color);
+            background-color: #fde8e8;
+            border: 1px solid #fbd5d5;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            text-align: center;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .not-found-container {
+            text-align: center;
+            padding: 2rem;
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            margin-top: 1rem;
+        }
+
+        .suggestions {
+            margin-top: 1rem;
+            color: #666;
+            font-style: italic;
+            text-align: center;
+        }
+
+        .suggestions a {
+            color: var(--secondary-color);
+            text-decoration: none;
+            margin: 0 5px;
+            transition: color 0.2s ease;
+        }
+
+        .suggestions a:hover {
+            color: var(--hover-color);
+            text-decoration: underline;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .container {
+                padding: 1rem;
+                margin-top: 1rem;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .movie-detail-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.5rem;
+            }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--secondary-color);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--hover-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-film"></i> Movie Rating Finder</h1>
+        <div class="search-container">
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="movieName" 
+                    placeholder="Enter movie name..."
+                    oninput="showSuggestions(this.value)"
+                >
+                <button onclick="fetchMovieDetails()">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+            <div id="suggestionList" class="suggestion-list" style="display: none;"></div>
+        </div>
+        
+        <div id="loading" class="loading"></div>
+        <div id="movieDetails" class="movie-details"></div>
+        <div id="suggestions" class="suggestions"></div>
+    </div>
+
+    <script>
+        const moviesList = JSON.parse('{{ movies | tojson | safe }}');
+
+        function searchGoogle(movieName) {
+            const searchQuery = encodeURIComponent(`${movieName} movie`);
+            window.open(`https://www.google.com/search?q=${searchQuery}`, '_blank');
+        }
+
+        function fetchMovieDetails() {
+            const movieName = document.getElementById('movieName').value;
+            const loading = document.getElementById('loading');
+            const movieDetails = document.getElementById('movieDetails');
+            
+            if (!movieName.trim()) {
+                movieDetails.innerHTML = '<div class="error">Please enter a movie name</div>';
+                return;
+            }
+
+            loading.style.display = 'block';
+            movieDetails.innerHTML = '';
+
+            fetch(`/get_rating?movie_name=${encodeURIComponent(movieName)}`)
+                .then(response => response.json())
+                .then(data => {
+                    loading.style.display = 'none';
+                    
+                    if (data.title) {
+                        movieDetails.innerHTML = `
+                            <div class="movie-detail-item">
+                                <i class="fas fa-film"></i>
+                                <strong>Title:</strong> ${data.title}
+                            </div>
+                            <div class="movie-detail-item">
+                                <i class="fas fa-star"></i>
+                                <strong>Rating:</strong> ${data.rating}/10
+                            </div>
+                            <div class="movie-detail-item">
+                                <i class="fas fa-theater-masks"></i>
+                                <strong>Genre:</strong> ${data.genre}
+                            </div>
+                            <div class="movie-detail-item">
+                                <i class="fas fa-calendar-alt"></i>
+                                <strong>Release Year:</strong> ${data.release_year}
+                            </div>
+                            <div class="action-buttons">
+                                <button class="google-search-btn" onclick="searchGoogle('${data.title}')">
+                                    <i class="fab fa-google"></i> Search on Google
+                                </button>
+                            </div>
+                        `;
+                        document.getElementById('suggestions').innerHTML = "";
+                    } else {
+                        movieDetails.innerHTML = `
+                            <div class="not-found-container">
+                                <div class="error">Movie not found in our database</div>
+                                <p>Would you like to search for this movie on Google?</p>
+                                <div class="action-buttons">
+                                    <button class="google-search-btn" onclick="searchGoogle('${movieName}')">
+                                        <i class="fab fa-google"></i> Search on Google
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        if (data.suggestions && data.suggestions.length > 0) {
+                            document.getElementById('suggestions').innerHTML = 
+                                `<strong>Did you mean:</strong> ${data.suggestions.map(suggestion => 
+                                    `<a href="#" onclick="document.getElementById('movieName').value='${suggestion}'; fetchMovieDetails(); return false;">${suggestion}</a>`
+                                ).join(', ')}?`;
+                        }
+                    }
+                })
+                .catch(error => {
+                    loading.style.display = 'none';
+                    movieDetails.innerHTML = `
+                        <div class="not-found-container">
+                            <div class="error">An error occurred while fetching movie details</div>
+                            <p>Would you like to search for this movie on Google?</p>
+                            <div class="action-buttons">
+                                <button class="google-search-btn" onclick="searchGoogle('${movieName}')">
+                                    <i class="fab fa-google"></i> Search on Google
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    console.error('Error:', error);
+                });
+        }
+
+        function showSuggestions(value) {
+            const suggestionList = document.getElementById('suggestionList');
+            suggestionList.innerHTML = '';
+            
+            if (value) {
+                const filteredMovies = moviesList.filter(movie => 
+                    movie.toLowerCase().includes(value.toLowerCase())
+                );
+                
+                if (filteredMovies.length > 0) {
+                    filteredMovies.slice(0, 5).forEach(movie => {
+                        const item = document.createElement('div');
+                        item.textContent = movie;
+                        item.className = 'suggestion-item';
+                        item.onclick = () => {
+                            document.getElementById('movieName').value = movie;
+                            suggestionList.style.display = 'none';
+                            fetchMovieDetails();
+                        };
+                        suggestionList.appendChild(item);
+                    });
+                    suggestionList.style.display = 'block';
+                } else {
+                    suggestionList.style.display = 'none';
+                }
+            } else {
+                suggestionList.style.display = 'none';
+            }
+        }
+
+        // Close suggestions when clicking outside
+        document.addEventListener('click', (e) => {
+            const suggestionList = document.getElementById('suggestionList');
+            const movieInput = document.getElementById('movieName');
+            
+            if (e.target !== movieInput) {
+                suggestionList.style.display = 'none';
+            }
+        });
+
+        // Allow Enter key to trigger search
+        document.getElementById('movieName').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                fetchMovieDetails();
+            }
+        });
+    </script>
+</body>
+</html>
